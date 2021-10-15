@@ -1,0 +1,33 @@
+{
+  "name": "child-duplex",
+  "version": "1.0.0",
+  "description": "An implementation for child processes to act like duplex streams inspired by duplex-child-process",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AmandaDiscord/ChildDuplex.git"
+  },
+  "keywords": [
+    "duplex",
+    "child-process"
+  ],
+  "author": "PapiOphidian",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AmandaDiscord/ChildDuplex/issues"
+  },
+  "homepage": "https://github.com/AmandaDiscord/ChildDuplex#readme",
+  "devDependencies": {
+    "@types/node": "^16.11.0",
+    "typescript": "^4.4.4"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ]
+}
