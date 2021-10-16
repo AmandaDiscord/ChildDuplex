@@ -141,8 +141,10 @@ class ChildProcess extends Duplex {
 		this.unpipe = this._reader.unpipe;
 		this.setEncoding = this._reader.setEncoding;
 		this.read = this._reader.read;
+		this._read = this._reader._read;
 		this.end = this._writer.end;
 		this.write = this._writer.write;
+		this._write = this._writer._write;
 	}
 
 	public spawn(command: string, args?: ReadonlyArray<string>, options?: import("child_process").SpawnOptionsWithoutStdio) {
@@ -221,7 +223,7 @@ class ChildProcess extends Duplex {
 				ex = e;
 				onExit();
 			}
-			cb && cb();
+			if (cb && typeof cb === "function") cb(ex || undefined);
 		}
 
 		function cleanup() {

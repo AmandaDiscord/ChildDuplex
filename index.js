@@ -30,8 +30,10 @@ class ChildProcess extends stream_1.Duplex {
         this.unpipe = this._reader.unpipe;
         this.setEncoding = this._reader.setEncoding;
         this.read = this._reader.read;
+        this._read = this._reader._read;
         this.end = this._writer.end;
         this.write = this._writer.write;
+        this._write = this._writer._write;
     }
     spawn(command, args, options) {
         var _a, _b, _c, _d, _e;
@@ -103,7 +105,8 @@ class ChildProcess extends stream_1.Duplex {
                 ex = e;
                 onExit();
             }
-            cb && cb();
+            if (cb && typeof cb === "function")
+                cb(ex || undefined);
         }
         function cleanup() {
             that._process =
