@@ -147,6 +147,10 @@ class ChildProcess extends Duplex {
 		this._write = this._writer._write;
 	}
 
+	private _transform(chunk: Buffer | string, encoding: string, callback: (error: Error | null, chunk?: Buffer | string) => any) {
+		callback(null, chunk);
+	}
+
 	public spawn(command: string, args?: ReadonlyArray<string>, options?: import("child_process").SpawnOptionsWithoutStdio) {
 		const that = this;
 

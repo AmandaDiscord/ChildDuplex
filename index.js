@@ -35,6 +35,9 @@ class ChildProcess extends stream_1.Duplex {
         this.write = this._writer.write;
         this._write = this._writer._write;
     }
+    _transform(chunk, encoding, callback) {
+        callback(null, chunk);
+    }
     spawn(command, args, options) {
         var _a, _b, _c, _d, _e;
         const that = this;

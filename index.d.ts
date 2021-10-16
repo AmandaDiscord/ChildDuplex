@@ -25,6 +25,7 @@ declare class ChildProcess extends Duplex {
     kill: (error?: Error | undefined) => void;
     noop: typeof noop;
     constructor(options?: import("stream").TransformOptions);
+    private _transform;
     spawn(command: string, args?: ReadonlyArray<string>, options?: import("child_process").SpawnOptionsWithoutStdio): this;
     on<E extends keyof typeof delegateEvents>(event: E, fn: (...args: Array<any>) => any): this | PassThrough;
     once<E extends keyof typeof delegateEvents>(event: E, fn: (...args: Array<any>) => any): this | PassThrough;
