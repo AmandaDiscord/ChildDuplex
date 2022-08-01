@@ -109,18 +109,11 @@ class ChildProcess extends Duplex {
 	private _stdout: import("stream").Readable | null;
 	private _stderr: import("stream").Readable | null;
 
-	public kill: (error?: Error) => void;
-	// @ts-ignore
-	public addListener = ChildProcess.prototype.on;
+	public unpipe: (destination?: NodeJS.WritableStream | undefined) => this;
+	public setEncoding: (encoding: BufferEncoding) => this;
 
-	// @ts-ignore
-	public unpipe: typeof PassThrough.prototype.unpipe;
-	// @ts-ignore
-	public setEncoding: typeof PassThrough.prototype.setEncoding;
-
-	public destroy = noop;
-	// @ts-ignore
-	public kill = noop;
+	public kill: (error?: Error) => void = noop;
+	public destroy = noop as () => this;
 	public noop = noop;
 
 	public constructor(options?: import("stream").TransformOptions) {
@@ -138,11 +131,11 @@ class ChildProcess extends Duplex {
 
 
 		this.pipe = this._reader.pipe;
-		this.unpipe = this._reader.unpipe;
-		this.setEncoding = this._reader.setEncoding;
+		this.unpipe = this._reader.unpipe as unknown as (destination?: NodeJS.WritableStream | undefined) => this;
+		this.setEncoding = this._reader.setEncoding as unknown as (encoding: BufferEncoding) => this;
 		this.read = this._reader.read;
 		this._read = this._reader._read;
-		this.end = this._writer.end;
+		this.end = this._writer.end as unknown as (cb?: (() => void) | undefined) => this;
 		this.write = this._writer.write;
 		this._write = this._writer._write;
 	}
@@ -160,8 +153,7 @@ class ChildProcess extends Duplex {
 		this._stderr = this._process.stderr;
 		if (this._stdin) this._writer.pipe(this._stdin);
 		this._stdout?.pipe(this._reader, { end: false });
-		// @ts-ignore
-		this.kill = this.destroy = kill;
+		this.kill = (this.destroy as typeof noop) = kill;
 
 		let stderr: Array<any> | null = [];
 		this._stderr?.on("data", onStderrData);
@@ -214,21 +206,21 @@ class ChildProcess extends Duplex {
 			onExit();
 		}
 
-		function kill(cb?: (error?: Error) => void) {
-			that._stdout?.destroy();
-			that._stderr?.destroy();
+		function kill(error?: Error | undefined) {
+			that._stdout?.destroy(error);
+			that._stderr?.destroy(error);
 
 			killed = true;
 
 			try {
-				// @ts-expect-error
-				that._process.kill((options && options.killSignal) || "SIGTERM");
+				that._process!.kill((options && options.killSignal) || "SIGTERM");
 			} catch (e) {
 				ex = e;
 				onExit();
 			}
-			if (cb && typeof cb === "function") cb(ex || undefined);
 		}
+
+		type t = this;
 
 		function cleanup() {
 			that._process =
@@ -241,35 +233,37 @@ class ChildProcess extends Duplex {
 			killed = null;
 
 			that.kill =
-			that.destroy = noop;
+			that.destroy = noop as () => t;
 		}
 	}
 
-	// @ts-ignore
-	public on<E extends keyof typeof delegateEvents>(event: E, fn: (...args: Array<any>) => any) {
+	public addListener<E extends keyof typeof delegateEvents>(event: E, fn: (...args: Array<any>) => any): this {
 		const substream = delegateEvents[event] as typeof delegateEvents[keyof typeof delegateEvents];
-		if (substream) return this[substream]["on"](event, fn);
+		if (substream) return this[substream]["on"](event, fn) as unknown as this;
+		else return super.addListener.call(this, event, fn);
+	}
+
+	public on<E extends keyof typeof delegateEvents>(event: E, fn: (...args: Array<any>) => any): this {
+		const substream = delegateEvents[event] as typeof delegateEvents[keyof typeof delegateEvents];
+		if (substream) return this[substream]["on"](event, fn) as unknown as this;
 		else return super.on.call(this, event, fn);
 	}
 
-	// @ts-ignore
-	public once<E extends keyof typeof delegateEvents>(event: E, fn: (...args: Array<any>) => any) {
+	public once<E extends keyof typeof delegateEvents>(event: E, fn: (...args: Array<any>) => any): this {
 		const substream = delegateEvents[event] as typeof delegateEvents[keyof typeof delegateEvents];
-		if (substream) return this[substream]["once"](event, fn);
+		if (substream) return this[substream]["once"](event, fn) as unknown as this;
 		else return super.once.call(this, event, fn);
 	}
 
-	// @ts-ignore
-	public removeListener<E extends keyof typeof delegateEvents>(event: E, fn: (...args: Array<any>) => any) {
+	public removeListener<E extends keyof typeof delegateEvents>(event: E, fn: (...args: Array<any>) => any): this {
 		const substream = delegateEvents[event] as typeof delegateEvents[keyof typeof delegateEvents];
-		if (substream) return this[substream]["removeListener"](event, fn);
+		if (substream) return this[substream]["removeListener"](event, fn) as unknown as this;
 		else return super.removeListener.call(this, event, fn);
 	}
 
-	// @ts-ignore
-	public removeAllListeners<E extends keyof typeof delegateEvents>(event?: E) {
+	public removeAllListeners<E extends keyof typeof delegateEvents>(event?: E): this {
 		const substream = (event ? delegateEvents[event] : undefined) as typeof delegateEvents[keyof typeof delegateEvents];
-		if (substream && event) return this[substream]["removeAllListeners"](event);
+		if (substream && event) return this[substream]["removeAllListeners"](event) as unknown as this;
 		else return super.removeAllListeners.call(this, event);
 	}
 

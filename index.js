@@ -11,11 +11,8 @@ const delegateEvents = {
 class ChildProcess extends stream_1.Duplex {
     constructor(options) {
         super(options);
-        // @ts-ignore
-        this.addListener = ChildProcess.prototype.on;
-        this.destroy = noop;
-        // @ts-ignore
         this.kill = noop;
+        this.destroy = noop;
         this.noop = noop;
         this._reader = new stream_1.PassThrough(options);
         this._writer = new stream_1.PassThrough(options);
@@ -48,7 +45,6 @@ class ChildProcess extends stream_1.Duplex {
         if (this._stdin)
             this._writer.pipe(this._stdin);
         (_a = this._stdout) === null || _a === void 0 ? void 0 : _a.pipe(this._reader, { end: false });
-        // @ts-ignore
         this.kill = this.destroy = kill;
         let stderr = [];
         (_b = this._stderr) === null || _b === void 0 ? void 0 : _b.on("data", onStderrData);
@@ -95,21 +91,18 @@ class ChildProcess extends stream_1.Duplex {
             (_b = that._stderr) === null || _b === void 0 ? void 0 : _b.destroy();
             onExit();
         }
-        function kill(cb) {
+        function kill(error) {
             var _a, _b;
-            (_a = that._stdout) === null || _a === void 0 ? void 0 : _a.destroy();
-            (_b = that._stderr) === null || _b === void 0 ? void 0 : _b.destroy();
+            (_a = that._stdout) === null || _a === void 0 ? void 0 : _a.destroy(error);
+            (_b = that._stderr) === null || _b === void 0 ? void 0 : _b.destroy(error);
             killed = true;
             try {
-                // @ts-expect-error
                 that._process.kill((options && options.killSignal) || "SIGTERM");
             }
             catch (e) {
                 ex = e;
                 onExit();
             }
-            if (cb && typeof cb === "function")
-                cb(ex || undefined);
         }
         function cleanup() {
             that._process =
@@ -124,7 +117,13 @@ class ChildProcess extends stream_1.Duplex {
                 that.destroy = noop;
         }
     }
-    // @ts-ignore
+    addListener(event, fn) {
+        const substream = delegateEvents[event];
+        if (substream)
+            return this[substream]["on"](event, fn);
+        else
+            return super.addListener.call(this, event, fn);
+    }
     on(event, fn) {
         const substream = delegateEvents[event];
         if (substream)
@@ -132,7 +131,6 @@ class ChildProcess extends stream_1.Duplex {
         else
             return super.on.call(this, event, fn);
     }
-    // @ts-ignore
     once(event, fn) {
         const substream = delegateEvents[event];
         if (substream)
@@ -140,7 +138,6 @@ class ChildProcess extends stream_1.Duplex {
         else
             return super.once.call(this, event, fn);
     }
-    // @ts-ignore
     removeListener(event, fn) {
         const substream = delegateEvents[event];
         if (substream)
@@ -148,7 +145,6 @@ class ChildProcess extends stream_1.Duplex {
         else
             return super.removeListener.call(this, event, fn);
     }
-    // @ts-ignore
     removeAllListeners(event) {
         const substream = (event ? delegateEvents[event] : undefined);
         if (substream && event)

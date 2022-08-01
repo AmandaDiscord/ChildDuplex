@@ -1,5 +1,7 @@
 /// <reference types="node" />
-import { PassThrough, Duplex } from "stream";
+/// <reference types="node" />
+/// <reference types="node" />
+import { Duplex } from "stream";
 declare const delegateEvents: {
     readable: "_reader";
     data: "_reader";
@@ -17,20 +19,19 @@ declare class ChildProcess extends Duplex {
     private _stdin;
     private _stdout;
     private _stderr;
+    unpipe: (destination?: NodeJS.WritableStream | undefined) => this;
+    setEncoding: (encoding: BufferEncoding) => this;
     kill: (error?: Error) => void;
-    addListener: <E extends "readable" | "data" | "end" | "drain" | "finish">(event: E, fn: (...args: Array<any>) => any) => ChildProcess | PassThrough;
-    unpipe: typeof PassThrough.prototype.unpipe;
-    setEncoding: typeof PassThrough.prototype.setEncoding;
-    destroy: typeof noop;
-    kill: (error?: Error | undefined) => void;
+    destroy: () => this;
     noop: typeof noop;
     constructor(options?: import("stream").TransformOptions);
     private _transform;
     spawn(command: string, args?: ReadonlyArray<string>, options?: import("child_process").SpawnOptionsWithoutStdio): this;
-    on<E extends keyof typeof delegateEvents>(event: E, fn: (...args: Array<any>) => any): this | PassThrough;
-    once<E extends keyof typeof delegateEvents>(event: E, fn: (...args: Array<any>) => any): this | PassThrough;
-    removeListener<E extends keyof typeof delegateEvents>(event: E, fn: (...args: Array<any>) => any): this | PassThrough;
-    removeAllListeners<E extends keyof typeof delegateEvents>(event?: E): this | PassThrough;
+    addListener<E extends keyof typeof delegateEvents>(event: E, fn: (...args: Array<any>) => any): this;
+    on<E extends keyof typeof delegateEvents>(event: E, fn: (...args: Array<any>) => any): this;
+    once<E extends keyof typeof delegateEvents>(event: E, fn: (...args: Array<any>) => any): this;
+    removeListener<E extends keyof typeof delegateEvents>(event: E, fn: (...args: Array<any>) => any): this;
+    removeAllListeners<E extends keyof typeof delegateEvents>(event?: E): this;
     listeners<E extends keyof typeof delegateEvents>(event: E): Array<Function>;
 }
 declare function noop(): void;
